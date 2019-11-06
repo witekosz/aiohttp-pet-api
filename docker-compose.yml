@@ -7,19 +7,35 @@ services:
     restart: always
     image: web_app
     container_name: async_app
-#    command: python run_app.py
+    command: python main.py
     environment:
       APP_ENV: DEVELOPMENT
       APP_DEBUG: 'True'
       APP_PORT: 5000
-      MONGODB_DATABASE: flask_db
-      MONGODB_USERNAME: flask_db_user
-      MONGODB_PASSWORD: 4eHpCNrykl8w
-      MONGODB_HOST: mongo
+      POSTGRES_USER: api_user
+      POSTGRES_PASSWORD: psg_pass
+      POSTGRES_DB: shelter_api
+      POSTGRES_PORT: postgres
+    depends_on:
+      - postgres
     volumes:
       - ./app/:/usr/src/app/
-#    ports:
-#      - 5000:5000
+    ports:
+      - 8080:8080
+    networks:
+      - web
+
+  postgres:
+    image: postgres:11
+    restart: always
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: api_user
+      POSTGRES_PASSWORD: psg_pass
+      POSTGRES_DB: shelter_api
+      PYTHONASYNCIODEBUG: 1
+    ports:
+      - 5432:5432
     networks:
       - web
 
