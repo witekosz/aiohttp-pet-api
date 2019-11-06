@@ -1,4 +1,8 @@
 aiohttp
+aiohttp-devtools
 cchardet
 aiodns
+aiopg
+SQLAlchemy
 pytest
+pytest-aiohttp
