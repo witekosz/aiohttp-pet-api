@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+
+  a_app:
+    build: ./app
+    restart: always
+    image: web_app
+    container_name: async_app
+#    command: python run_app.py
+    environment:
+      APP_ENV: DEVELOPMENT
+      APP_DEBUG: 'True'
+      APP_PORT: 5000
+      MONGODB_DATABASE: flask_db
+      MONGODB_USERNAME: flask_db_user
+      MONGODB_PASSWORD: 4eHpCNrykl8w
+      MONGODB_HOST: mongo
+    volumes:
+      - ./app/:/usr/src/app/
+#    ports:
+#      - 5000:5000
+    networks:
+      - web
+
+networks:
+  web:
+    driver: bridge
