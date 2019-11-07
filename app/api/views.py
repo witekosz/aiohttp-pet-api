@@ -2,7 +2,6 @@ import logging
 from datetime import datetime
 
 from psycopg2.errors import lookup as psg_error
-from psycopg2.errorcodes import INVALID_TEXT_REPRESENTATION
 import sqlalchemy as sa
 from aiohttp import web
 
