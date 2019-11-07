@@ -4,14 +4,18 @@ import sqlalchemy as sa
 from aiohttp import web
 from sqlalchemy.sql.ddl import CreateTable
 
-from api.models import shelter
+from api.models import shelter, pet
+from db import check_and_create_table
 
 
 async def index(request):
     """Index view"""
     text = "REST SHELTER API"
     async with request.app['db'].acquire() as conn:
-        tables = await conn.execute(CreateTable(shelter))
+        await conn.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
+        await check_and_create_table(conn, shelter, "shelter")
+        await check_and_create_table(conn, pet, "pet")
+
         logging.info("Test")
         # cursor = await conn.execute(db.question.select())
         # records = await cursor.fetchall()
