@@ -1,3 +1,5 @@
+import json
+
 import sqlalchemy as sa
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import UUID
@@ -26,3 +28,10 @@ pet = sa.Table(
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('shelter_id', UUID(as_uuid=True), sa.ForeignKey('shelter.id', ondelete='CASCADE'), nullable=False)
 )
+
+
+class UUIDEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, UUID):
+            return obj.hex
+        return json.JSONEncoder.default(self, obj)

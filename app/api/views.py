@@ -24,6 +24,24 @@ async def index(request):
         return web.Response(text=text)
 
 
+async def pets_view(request):
+    """Index view"""
+    async with request.app['db'].acquire() as conn:
+        cursor = await conn.execute(pet.select())
+        pets = await cursor.fetchall()
+        data = [str(p) for p in pets]
+        return web.json_response(data)
+
+
+async def shelters_view(request):
+    """Index view"""
+    async with request.app['db'].acquire() as conn:
+        cursor = await conn.execute(shelter.select())
+        shelters = await cursor.fetchall()
+        data = [str(s) for s in shelters]
+        return web.json_response(data)
+
+
 async def handle(request):
     name = request.match_info.get('name', "Anonymous")
     text = f"Hello, {name}"
