@@ -12,7 +12,6 @@ shelter = sa.Table(
     sa.Column('shelter_name', sa.String(200), nullable=False),
     sa.Column('full_address', sa.Text(), nullable=True),
     sa.Column('city', sa.String(200), nullable=True),
-    sa.Column('pets_available', sa.Integer(), server_default="0", nullable=True)
 )
 
 pet = sa.Table(
