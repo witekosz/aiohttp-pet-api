@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 import sqlalchemy as sa
 from aiohttp import web
@@ -40,6 +41,58 @@ async def shelters_view(request):
         shelters = await cursor.fetchall()
         data = [str(s) for s in shelters]
         return web.json_response(data)
+
+
+class PetsView(web.View):
+
+    async def get(self):
+        token = datetime.now().strftime("%Y%m%d%H%M%S")
+        room = self.request.match_info.get("room", None)
+        return web.json_response({"room": room, "token": token, "result": "OK"})
+
+    async def post(self):
+        room = self.request.match_info.get("room", None)
+        token = datetime.now().strftime("%Y%m%d%H%M%S")
+        return web.json_response({"room": room, "token": token, "result": "OK"})
+
+
+class PetDetailView(web.View):
+
+    async def get(self):
+        token = datetime.now().strftime("%Y%m%d%H%M%S")
+        room = self.request.match_info.get("room", None)
+        return web.json_response({"room": room, "token": token, "result": "OK"})
+
+    async def post(self):
+        room = self.request.match_info.get("room", None)
+        token = datetime.now().strftime("%Y%m%d%H%M%S")
+        return web.json_response({"room": room, "token": token, "result": "OK"})
+
+
+class SheltersView(web.View):
+
+    async def post(self):
+        room = self.request.match_info.get("room", None)
+        token = datetime.now().strftime("%Y%m%d%H%M%S")
+        return web.json_response({"room": room, "token": token, "result": "OK"})
+
+
+class ShelterDetailView(web.View):
+
+    async def get(self):
+        shelter_id = self.request.match_info.get("uuid", None)
+        return web.json_response({"shelter": shelter_id})
+
+    async def post(self):
+        shelter_id = self.request.match_info.get("uuid", None)
+        return web.json_response({"shelter": shelter_id})
+
+
+class ShelterPetsView(web.View):
+
+    async def get(self):
+        shelter_id = self.request.match_info.get("uuid", None)
+        return web.json_response({"shelter": shelter_id})
 
 
 async def handle(request):
