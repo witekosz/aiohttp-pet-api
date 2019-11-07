@@ -76,6 +76,24 @@ class SheltersView(web.View):
 
             return web.json_response(data)
 
+    async def post(self):
+        data = await self.request.post()
+        try:
+            shelter_name = data['shelter-name']
+            full_address = data['full_address']
+            city = data['city']
+        except KeyError:
+            error = {'error': 'Send post data'}
+            return web.json_response(error)
+
+        logging.info(shelter_name, full_address, city)
+        # async with self.request.app['db'].acquire() as conn:
+        #     cursor = await conn.execute(shelter.select())
+        #     shelters = await cursor.fetchall()
+        #     data = [str(s) for s in shelters]
+
+        return web.json_response('data')
+
 
 class ShelterDetailView(web.View):
 
@@ -93,10 +111,6 @@ class ShelterDetailView(web.View):
             except psg_error("22P02"):  # InvalidTextRepresentation
                 error = {'error': 'Invalid UUID format'}
                 return web.json_response(error)
-
-    async def post(self):
-        shelter_id = self.request.match_info.get("uuid", None)
-        return web.json_response({"shelter": shelter_id})
 
     async def delete(self):
         shelter_id = self.request.match_info.get("uuid", None)
