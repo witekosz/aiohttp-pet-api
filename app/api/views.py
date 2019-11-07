@@ -1,6 +1,8 @@
 import logging
 from datetime import datetime
 
+from psycopg2.errors import lookup as psg_error
+from psycopg2.errorcodes import INVALID_TEXT_REPRESENTATION
 import sqlalchemy as sa
 from aiohttp import web
 
@@ -66,21 +68,49 @@ class PetDetailView(web.View):
 
 class SheltersView(web.View):
 
-    async def post(self):
-        room = self.request.match_info.get("room", None)
-        token = datetime.now().strftime("%Y%m%d%H%M%S")
-        return web.json_response({"room": room, "token": token, "result": "OK"})
+    async def get(self):
+        async with self.request.app['db'].acquire() as conn:
+            cursor = await conn.execute(shelter.select())
+            shelters = await cursor.fetchall()
+            data = [str(s) for s in shelters]
+
+            return web.json_response(data)
 
 
 class ShelterDetailView(web.View):
 
     async def get(self):
         shelter_id = self.request.match_info.get("uuid", None)
-        return web.json_response({"shelter": shelter_id})
+        async with self.request.app['db'].acquire() as conn:
+            logging.info(shelter)
+            query = shelter.select().where(shelter.c.id == shelter_id)
+            try:
+                cursor = await conn.execute(query)
+                shelters = await cursor.fetchall()
+                data = [str(s) for s in shelters]
+                return web.json_response(data)
+
+            except psg_error("22P02"):  # InvalidTextRepresentation
+                error = {'error': 'Invalid UUID format'}
+                return web.json_response(error)
 
     async def post(self):
         shelter_id = self.request.match_info.get("uuid", None)
         return web.json_response({"shelter": shelter_id})
+
+    async def delete(self):
+        shelter_id = self.request.match_info.get("uuid", None)
+        async with self.request.app['db'].acquire() as conn:
+            logging.info(shelter)
+            query = sa.delete(shelter).where(shelter.c.id == shelter_id)
+            try:
+                await conn.execute(query)
+                msg = {'message': 'Deleted'}
+                return web.json_response(msg)
+
+            except psg_error("22P02"):  # InvalidTextRepresentation
+                error = {'error': 'Invalid UUID format'}
+                return web.json_response(error)
 
 
 class ShelterPetsView(web.View):
