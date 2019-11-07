@@ -6,7 +6,7 @@ meta = sa.MetaData()
 
 shelter = sa.Table(
     'shelter', meta,
-    sa.Column('id', UUID(as_uuid=True), primary_key=True),
+    sa.Column('id', UUID(as_uuid=True), primary_key=True, server_default=sa.text("uuid_generate_v4()")),
     sa.Column('name', sa.String(200), nullable=False),
     sa.Column('full_address', sa.Text(), nullable=True),
     sa.Column('city', sa.String(200), nullable=True),
@@ -15,7 +15,7 @@ shelter = sa.Table(
 
 pet = sa.Table(
     'pet', meta,
-    sa.Column('id', UUID(as_uuid=True), primary_key=True),
+    sa.Column('id', UUID(as_uuid=True), primary_key=True, autoincrement=True),
     sa.Column('name', sa.String(200), nullable=False),
     sa.Column('type', sa.String(200), nullable=False),
     sa.Column('available', sa.Boolean(), nullable=False),

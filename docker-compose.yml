@@ -8,6 +8,7 @@ services:
     image: web_app
     container_name: async_app
     command: python main.py
+#    command: adev runserver main.py
     environment:
       APP_ENV: DEVELOPMENT
       APP_DEBUG: 'True'

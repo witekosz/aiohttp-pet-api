@@ -1,10 +1,23 @@
+import logging
+
+import sqlalchemy as sa
 from aiohttp import web
+from sqlalchemy.sql.ddl import CreateTable
+
+from api.models import shelter
 
 
 async def index(request):
     """Index view"""
     text = "REST SHELTER API"
-    return web.Response(text=text)
+    async with request.app['db'].acquire() as conn:
+        tables = await conn.execute(CreateTable(shelter))
+        logging.info("Test")
+        # cursor = await conn.execute(db.question.select())
+        # records = await cursor.fetchall()
+        # questions = [dict(q) for q in records]
+        # return {"questions": questions}
+        return web.Response(text=text)
 
 
 async def handle(request):
