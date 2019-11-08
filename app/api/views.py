@@ -34,10 +34,21 @@ async def pets_view(request):
 class PetsView(web.View):
 
     async def get(self):
-        # TODO
-        token = datetime.now().strftime("%Y%m%d%H%M%S")
-        room = self.request.match_info.get("room", None)
-        return web.json_response({"room": room, "token": token, "result": "OK"})
+        pet_type = self.request.rel_url.query.get('type', '')
+        shelter_id = self.request.rel_url.query.get('shelterid', '')
+
+        async with self.request.app['db'].acquire() as conn:
+            query = pet.select()
+            if pet_type:
+                query = query.where(pet.c.pet_type == pet_type)
+            elif shelter_id:
+                query = query.where(pet.c.shelter_id == shelter_id)
+
+            cursor = await conn.execute(query)
+            shelters = await cursor.fetchall()
+            data = [str(s) for s in shelters]
+
+            return web.json_response(data)
 
     async def post(self):
         # TODO
@@ -54,11 +65,31 @@ class PetDetailView(web.View):
         room = self.request.match_info.get("room", None)
         return web.json_response({"room": room, "token": token, "result": "OK"})
 
-    async def post(self):
+    async def patch(self):
         # TODO
         room = self.request.match_info.get("room", None)
         token = datetime.now().strftime("%Y%m%d%H%M%S")
         return web.json_response({"room": room, "token": token, "result": "OK"})
+
+    async def delete(self):
+        pet_id = self.request.match_info.get("uuid", None)
+        async with self.request.app['db'].acquire() as conn:
+            query = sa.delete(pet)\
+                .where(pet.c.id == pet_id)
+            try:
+                await conn.execute(query)
+                return web.json_response(
+                    {
+                        'message': 'Deleted'
+                    }
+                )
+
+            except psg_error("22P02"):  # InvalidTextRepresentation
+                return web.json_response(
+                    {
+                        'error': 'Invalid UUID format'
+                    }
+                )
 
 
 class SheltersView(web.View):
