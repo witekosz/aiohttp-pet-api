@@ -51,10 +51,41 @@ class PetsView(web.View):
             return web.json_response(data)
 
     async def post(self):
-        # TODO
-        room = self.request.match_info.get("room", None)
-        token = datetime.now().strftime("%Y%m%d%H%M%S")
-        return web.json_response({"room": room, "token": token, "result": "OK"})
+        data = await self.request.post()
+        try:
+            pet_name = data['pet-name']
+            pet_type = data['pet-type']
+            desc = data['description']
+            shelter_id = data['shelter-id']
+
+        except KeyError:
+            return web.json_response(
+                {
+                    'error': 'Send required post form data(shelter-name, full-address, city)'
+                }
+            )
+
+        async with self.request.app['db'].acquire() as conn:
+            await conn.execute(
+                shelter.insert().values(
+                    pet_name=pet_name,
+                    pet_type=pet_type,
+                    desc=desc,
+                    shelter_id=shelter_id,
+                )
+            )
+
+        return web.json_response(
+            {
+                "message": "ok",
+                "shelter": {
+                    "pet_name": pet_name,
+                    "pet_type": pet_type,
+                    "desc": desc,
+                    "shelter_id": shelter_id,
+                }
+            }
+        )
 
 
 class PetDetailView(web.View):
