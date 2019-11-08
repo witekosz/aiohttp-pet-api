@@ -1,12 +1,15 @@
 import logging
 from datetime import datetime
 
+from aiohttp.web_exceptions import HTTPNotFound
+from aiohttp.web_request import Request
 from psycopg2.errors import lookup as psg_error
 import sqlalchemy as sa
 from aiohttp import web
 
 from api.models import shelter, pet
 from api.serializers import PetSerializer, ShelterSerializer
+from api.utils import validate_uuid4
 from db import check_and_create_table
 from settings import PET_TYPES
 
@@ -187,47 +190,47 @@ class SheltersView(web.View):
 
 
 class ShelterDetailView(web.View):
+    def __init__(self, request: Request):
+        self.table = shelter
+        self.serializer = ShelterSerializer()
+        self.object_id = request.match_info.get("uuid", None)
+        super().__init__(request)
+
+    async def get_object(self):
+        validate_id = await validate_uuid4(self.object_id)
+
+        if not validate_id:
+            raise web.HTTPBadRequest(body="Invalid UUID format")
+
+        async with self.request.app['db'].acquire() as conn:
+            query = self.table.select()\
+                .where(self.table.c.id == validate_id)
+            cursor = await conn.execute(query)
+            obj = await cursor.first()
+
+            if obj is None:
+                raise web.HTTPNotFound(body="Object not found")
+
+            return obj
 
     async def get(self):
-        shelter_id = self.request.match_info.get("uuid", None)
-        async with self.request.app['db'].acquire() as conn:
-            query = shelter.select()\
-                .where(shelter.c.id == shelter_id)
-            try:
-                cursor = await conn.execute(query)
-                shelters = await cursor.fetchall()
-                serializer = ShelterSerializer()
-
-                return web.json_response(
-                    serializer.dump(shelters, many=True)
-                )
-
-            except psg_error("22P02"):  # InvalidTextRepresentation
-                return web.json_response(
-                    {
-                        'error': 'Invalid UUID format'
-                    }
-                )
+        obj = await self.get_object()
+        return web.json_response(
+            self.serializer.dump(obj)
+        )
 
     async def delete(self):
-        shelter_id = self.request.match_info.get("uuid", None)
+        obj = await self.get_object()
         async with self.request.app['db'].acquire() as conn:
             query = sa.delete(shelter)\
-                .where(shelter.c.id == shelter_id)
-            try:
-                await conn.execute(query)
-                return web.json_response(
-                    {
-                        'message': 'Deleted'
-                    }
-                )
-
-            except psg_error("22P02"):  # InvalidTextRepresentation
-                return web.json_response(
-                    {
-                        'error': 'Invalid UUID format'
-                    }
-                )
+                .where(shelter.c.id == obj['id'])
+            await conn.execute(query)
+            return web.json_response(
+                {
+                    'message': 'deleted',
+                    'shelter': self.serializer.dump(obj)
+                },
+            )
 
 
 class ShelterPetsView(web.View):
