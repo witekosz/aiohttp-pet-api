@@ -31,23 +31,16 @@ async def pets_view(request):
         return web.json_response(data)
 
 
-async def shelters_view(request):
-    """Index view"""
-    async with request.app['db'].acquire() as conn:
-        cursor = await conn.execute(shelter.select())
-        shelters = await cursor.fetchall()
-        data = [str(s) for s in shelters]
-        return web.json_response(data)
-
-
 class PetsView(web.View):
 
     async def get(self):
+        # TODO
         token = datetime.now().strftime("%Y%m%d%H%M%S")
         room = self.request.match_info.get("room", None)
         return web.json_response({"room": room, "token": token, "result": "OK"})
 
     async def post(self):
+        # TODO
         room = self.request.match_info.get("room", None)
         token = datetime.now().strftime("%Y%m%d%H%M%S")
         return web.json_response({"room": room, "token": token, "result": "OK"})
@@ -56,11 +49,13 @@ class PetsView(web.View):
 class PetDetailView(web.View):
 
     async def get(self):
+        # TODO
         token = datetime.now().strftime("%Y%m%d%H%M%S")
         room = self.request.match_info.get("room", None)
         return web.json_response({"room": room, "token": token, "result": "OK"})
 
     async def post(self):
+        # TODO
         room = self.request.match_info.get("room", None)
         token = datetime.now().strftime("%Y%m%d%H%M%S")
         return web.json_response({"room": room, "token": token, "result": "OK"})
