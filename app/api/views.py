@@ -21,16 +21,6 @@ async def index(request):
         return web.Response(text=text)
 
 
-async def pets_view(request):
-    """Index view"""
-    async with request.app['db'].acquire() as conn:
-        cursor = await conn.execute(pet.select())
-        pets = await cursor.fetchall()
-        data = [str(p) for p in pets]
-
-        return web.json_response(data)
-
-
 class PetsView(web.View):
 
     async def get(self):
