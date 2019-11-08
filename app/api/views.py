@@ -7,6 +7,7 @@ from aiohttp import web
 
 from api.models import shelter, pet
 from db import check_and_create_table
+from settings import PET_TYPES
 
 
 async def index(request):
@@ -69,7 +70,8 @@ class SheltersView(web.View):
 
     async def get(self):
         async with self.request.app['db'].acquire() as conn:
-            cursor = await conn.execute(shelter.select())
+            query = shelter.select()
+            cursor = await conn.execute(query)
             shelters = await cursor.fetchall()
             data = [str(s) for s in shelters]
 
@@ -79,19 +81,35 @@ class SheltersView(web.View):
         data = await self.request.post()
         try:
             shelter_name = data['shelter-name']
-            full_address = data['full_address']
+            full_address = data['full-address']
             city = data['city']
+
         except KeyError:
-            error = {'error': 'Send post data'}
-            return web.json_response(error)
+            return web.json_response(
+                {
+                    'error': 'Send required post form data(shelter-name, full-address, city)'
+                }
+            )
 
-        logging.info(shelter_name, full_address, city)
-        # async with self.request.app['db'].acquire() as conn:
-        #     cursor = await conn.execute(shelter.select())
-        #     shelters = await cursor.fetchall()
-        #     data = [str(s) for s in shelters]
+        async with self.request.app['db'].acquire() as conn:
+            await conn.execute(
+                shelter.insert().values(
+                    shelter_name=shelter_name,
+                    full_address=full_address,
+                    city=city
+                )
+            )
 
-        return web.json_response('data')
+        return web.json_response(
+            {
+                "message": "ok",
+                "shelter": {
+                    "shelter_name": shelter_name,
+                    "full_address": full_address,
+                    "city": city
+                }
+            }
+        )
 
 
 class ShelterDetailView(web.View):
@@ -99,35 +117,70 @@ class ShelterDetailView(web.View):
     async def get(self):
         shelter_id = self.request.match_info.get("uuid", None)
         async with self.request.app['db'].acquire() as conn:
-            logging.info(shelter)
-            query = shelter.select().where(shelter.c.id == shelter_id)
+            query = shelter.select()\
+                .where(shelter.c.id == shelter_id)
             try:
                 cursor = await conn.execute(query)
                 shelters = await cursor.fetchall()
                 data = [str(s) for s in shelters]
+
                 return web.json_response(data)
 
             except psg_error("22P02"):  # InvalidTextRepresentation
-                error = {'error': 'Invalid UUID format'}
-                return web.json_response(error)
+                return web.json_response(
+                    {
+                        'error': 'Invalid UUID format'
+                    }
+                )
 
     async def delete(self):
         shelter_id = self.request.match_info.get("uuid", None)
         async with self.request.app['db'].acquire() as conn:
-            logging.info(shelter)
-            query = sa.delete(shelter).where(shelter.c.id == shelter_id)
+            query = sa.delete(shelter)\
+                .where(shelter.c.id == shelter_id)
             try:
                 await conn.execute(query)
-                msg = {'message': 'Deleted'}
-                return web.json_response(msg)
+                return web.json_response(
+                    {
+                        'message': 'Deleted'
+                    }
+                )
 
             except psg_error("22P02"):  # InvalidTextRepresentation
-                error = {'error': 'Invalid UUID format'}
-                return web.json_response(error)
+                return web.json_response(
+                    {
+                        'error': 'Invalid UUID format'
+                    }
+                )
 
 
 class ShelterPetsView(web.View):
 
     async def get(self):
         shelter_id = self.request.match_info.get("uuid", None)
-        return web.json_response({"shelter_pets_view": shelter_id})
+
+        try:
+            pet_type = self.request.rel_url.query['type']
+        except KeyError:
+            return web.json_response(
+                {
+                    'error': 'Send required query params(type)'
+                }
+            )
+
+        if pet_type not in PET_TYPES:
+            return web.json_response(
+                {
+                    'error': 'Unknown pet type'
+                }
+            )
+
+        async with self.request.app['db'].acquire() as conn:
+            query = pet.select()\
+                .where(pet.c.shelter_id == shelter_id)\
+                .where(pet.c.pet_type == pet_type)
+            cursor = await conn.execute(query)
+            shelter_pets = await cursor.fetchall()
+            data = [str(s) for s in shelter_pets]
+
+            return web.json_response(data)

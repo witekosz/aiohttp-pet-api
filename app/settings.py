@@ -10,3 +10,5 @@ POSTGRES_DB = 'shelter_api'
 # POSTGRES_HOST = 'postgres'
 POSTGRES_HOST = 'localhost'
 POSTGRES_PORT = '5432'
+
+PET_TYPES = ['dog', 'cat', 'parrot', 'python', 'guinea_pig']
