@@ -6,4 +6,6 @@ aiopg
 SQLAlchemy
 pytest
 pytest-aiohttp
+pytest-sugar
+pytest-xdist
 marshmallow
