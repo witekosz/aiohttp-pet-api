@@ -113,52 +113,30 @@ class PetsView(web.View):
         )
 
 
-class PetDetailView(web.View):
+class PetDetailView(BaseDetailView):
+    table = pet
+    serializer = PetSerializer()
+    key = "uuid"
 
     async def get(self):
-        pet_id = self.request.match_info.get("uuid", None)
-        async with self.request.app['db'].acquire() as conn:
-            query = pet.select()\
-                .where(pet.c.id == pet_id)
-            try:
-                cursor = await conn.execute(query)
-                pets = await cursor.fetchall()
-                serializer = PetSerializer()
-
-                return web.json_response(
-                    serializer.dump(pets, many=True)
-                )
-
-            except psg_error("22P02"):  # InvalidTextRepresentation
-                return web.json_response(
-                    {
-                        'error': 'Invalid UUID format'
-                    }
-                )
+        obj = await self.get_object()
+        return web.json_response(
+            self.serializer.dump(obj)
+        )
 
     async def patch(self):
         # TODO
         return web.json_response({})
 
     async def delete(self):
-        pet_id = self.request.match_info.get("uuid", None)
-        async with self.request.app['db'].acquire() as conn:
-            query = sa.delete(pet)\
-                .where(pet.c.id == pet_id)
-            try:
-                await conn.execute(query)
-                return web.json_response(
-                    {
-                        'message': 'Deleted'
-                    }
-                )
-
-            except psg_error("22P02"):  # InvalidTextRepresentation
-                return web.json_response(
-                    {
-                        'error': 'Invalid UUID format'
-                    }
-                )
+        instance = await self.get_object()
+        await self.perform_destroy(instance)
+        return web.json_response(
+            {
+                'message': 'deleted',
+                'pet': self.serializer.dump(instance)
+            },
+        )
 
 
 class SheltersView(web.View):
