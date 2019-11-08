@@ -81,16 +81,27 @@ class PetsView(web.View):
 class PetDetailView(web.View):
 
     async def get(self):
-        # TODO
-        token = datetime.now().strftime("%Y%m%d%H%M%S")
-        room = self.request.match_info.get("room", None)
-        return web.json_response({"room": room, "token": token, "result": "OK"})
+        pet_id = self.request.match_info.get("uuid", None)
+        async with self.request.app['db'].acquire() as conn:
+            query = pet.select()\
+                .where(pet.c.id == pet_id)
+            try:
+                cursor = await conn.execute(query)
+                shelters = await cursor.fetchall()
+                data = [str(s) for s in shelters]
+
+                return web.json_response(data)
+
+            except psg_error("22P02"):  # InvalidTextRepresentation
+                return web.json_response(
+                    {
+                        'error': 'Invalid UUID format'
+                    }
+                )
 
     async def patch(self):
         # TODO
-        room = self.request.match_info.get("room", None)
-        token = datetime.now().strftime("%Y%m%d%H%M%S")
-        return web.json_response({"room": room, "token": token, "result": "OK"})
+        return web.json_response({})
 
     async def delete(self):
         pet_id = self.request.match_info.get("uuid", None)
