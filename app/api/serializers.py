@@ -3,17 +3,18 @@ from marshmallow import Schema, fields
 
 class ShelterSerializer(Schema):
     id = fields.UUID(dump_only=True)
-    shelter_name = fields.Str()
-    full_address = fields.Str()
+    name = fields.Str(attribute='shelter_name')
+    fullAddress = fields.Str(attribute='full_address')
     city = fields.Str()
+    petsAvailable = fields.Int(attribute='pets_available')
 
 
 class PetSerializer(Schema):
     id = fields.UUID(dump_only=True)
-    pet_name = fields.Str()
-    pet_type = fields.Str()
+    name = fields.Str(attribute='pet_name')
+    type = fields.Str(attribute='pet_type')
     available = fields.Str()
-    added_at = fields.Str(dump_only=True)
-    adopted_at = fields.Str()
+    addedAt = fields.Str(dump_only=True, attribute='added_at')
+    adoptedAt = fields.Str(attribute='adoptedAt')
     description = fields.Str()
-    shelter_id = fields.UUID(dump_only=True)
+    shelterId = fields.UUID(dump_only=True, attribute='shelter_id')
