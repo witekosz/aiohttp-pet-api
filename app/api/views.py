@@ -69,8 +69,15 @@ class PetDetailView(web.View):
 class SheltersView(web.View):
 
     async def get(self):
+        city = self.request.rel_url.query.get('city', '')
+
         async with self.request.app['db'].acquire() as conn:
-            query = shelter.select()
+            if city:
+                query = shelter.select()\
+                    .where(shelter.c.city == city)
+            else:
+                query = shelter.select()
+
             cursor = await conn.execute(query)
             shelters = await cursor.fetchall()
             data = [str(s) for s in shelters]
