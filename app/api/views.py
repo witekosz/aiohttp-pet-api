@@ -6,6 +6,7 @@ import sqlalchemy as sa
 from aiohttp import web
 
 from api.models import shelter, pet
+from api.serializers import PetSerializer, ShelterSerializer
 from db import check_and_create_table
 from settings import PET_TYPES
 
@@ -35,10 +36,12 @@ class PetsView(web.View):
                 query = query.where(pet.c.shelter_id == shelter_id)
 
             cursor = await conn.execute(query)
-            shelters = await cursor.fetchall()
-            data = [str(s) for s in shelters]
+            pets = await cursor.fetchall()
+            schema = PetSerializer()
 
-            return web.json_response(data)
+            return web.json_response(
+                schema.dump(pets, many=True)
+            )
 
     async def post(self):
         data = await self.request.post()
@@ -87,10 +90,12 @@ class PetDetailView(web.View):
                 .where(pet.c.id == pet_id)
             try:
                 cursor = await conn.execute(query)
-                shelters = await cursor.fetchall()
-                data = [str(s) for s in shelters]
+                pets = await cursor.fetchall()
+                serializer = PetSerializer()
 
-                return web.json_response(data)
+                return web.json_response(
+                    serializer.dump(pets, many=True)
+                )
 
             except psg_error("22P02"):  # InvalidTextRepresentation
                 return web.json_response(
@@ -138,9 +143,11 @@ class SheltersView(web.View):
 
             cursor = await conn.execute(query)
             shelters = await cursor.fetchall()
-            data = [str(s) for s in shelters]
+            serializer = ShelterSerializer()
 
-            return web.json_response(data)
+            return web.json_response(
+                serializer.dump(shelters, many=True)
+            )
 
     async def post(self):
         data = await self.request.post()
@@ -187,9 +194,11 @@ class ShelterDetailView(web.View):
             try:
                 cursor = await conn.execute(query)
                 shelters = await cursor.fetchall()
-                data = [str(s) for s in shelters]
+                serializer = ShelterSerializer()
 
-                return web.json_response(data)
+                return web.json_response(
+                    serializer.dump(shelters, many=True)
+                )
 
             except psg_error("22P02"):  # InvalidTextRepresentation
                 return web.json_response(
@@ -246,6 +255,8 @@ class ShelterPetsView(web.View):
                 .where(pet.c.pet_type == pet_type)
             cursor = await conn.execute(query)
             shelter_pets = await cursor.fetchall()
-            data = [str(s) for s in shelter_pets]
+            serializer = PetSerializer()
 
-            return web.json_response(data)
+            return web.json_response(
+                serializer.dump(shelter_pets, many=True)
+            )
