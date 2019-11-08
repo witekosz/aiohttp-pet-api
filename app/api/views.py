@@ -1,7 +1,4 @@
-import logging
-from datetime import datetime
 
-from aiohttp.web_exceptions import HTTPNotFound
 from aiohttp.web_request import Request
 from psycopg2.errors import lookup as psg_error
 import sqlalchemy as sa
@@ -25,6 +22,36 @@ async def db_view(request):
         await conn.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
         await check_and_create_table(conn, shelter, "shelter")
         await check_and_create_table(conn, pet, "pet")
+
+
+class BaseDetailView(web.View):
+    table = None
+    serializer = None
+    key = None
+
+    async def get_object(self):
+        object_id = self.request.match_info.get(self.key, None)
+        validate_id = await validate_uuid4(object_id)
+
+        if not validate_id:
+            raise web.HTTPBadRequest(body="Invalid UUID format")
+
+        async with self.request.app['db'].acquire() as conn:
+            query = self.table.select()\
+                .where(self.table.c.id == validate_id)
+            cursor = await conn.execute(query)
+            obj = await cursor.first()
+
+            if obj is None:
+                raise web.HTTPNotFound(body="Object not found")
+
+            return obj
+
+    async def perform_destroy(self, instance):
+        async with self.request.app['db'].acquire() as conn:
+            query = sa.delete(self.table) \
+                .where(self.table.c.id == instance['id'])
+            await conn.execute(query)
 
 
 class PetsView(web.View):
@@ -189,29 +216,10 @@ class SheltersView(web.View):
         )
 
 
-class ShelterDetailView(web.View):
-    def __init__(self, request: Request):
-        self.table = shelter
-        self.serializer = ShelterSerializer()
-        self.object_id = request.match_info.get("uuid", None)
-        super().__init__(request)
-
-    async def get_object(self):
-        validate_id = await validate_uuid4(self.object_id)
-
-        if not validate_id:
-            raise web.HTTPBadRequest(body="Invalid UUID format")
-
-        async with self.request.app['db'].acquire() as conn:
-            query = self.table.select()\
-                .where(self.table.c.id == validate_id)
-            cursor = await conn.execute(query)
-            obj = await cursor.first()
-
-            if obj is None:
-                raise web.HTTPNotFound(body="Object not found")
-
-            return obj
+class ShelterDetailView(BaseDetailView):
+    table = shelter
+    serializer = ShelterSerializer()
+    key = "uuid"
 
     async def get(self):
         obj = await self.get_object()
@@ -220,17 +228,14 @@ class ShelterDetailView(web.View):
         )
 
     async def delete(self):
-        obj = await self.get_object()
-        async with self.request.app['db'].acquire() as conn:
-            query = sa.delete(shelter)\
-                .where(shelter.c.id == obj['id'])
-            await conn.execute(query)
-            return web.json_response(
-                {
-                    'message': 'deleted',
-                    'shelter': self.serializer.dump(obj)
-                },
-            )
+        instance = await self.get_object()
+        await self.perform_destroy(instance)
+        return web.json_response(
+            {
+                'message': 'deleted',
+                'shelter': self.serializer.dump(instance)
+            },
+        )
 
 
 class ShelterPetsView(web.View):
