@@ -14,12 +14,14 @@ from settings import PET_TYPES
 async def index(request):
     """Index view"""
     text = "REST SHELTER API"
+    return web.Response(text=text)
+
+
+async def db_view(request):
     async with request.app['db'].acquire() as conn:
         await conn.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
         await check_and_create_table(conn, shelter, "shelter")
         await check_and_create_table(conn, pet, "pet")
-
-        return web.Response(text=text)
 
 
 class PetsView(web.View):
