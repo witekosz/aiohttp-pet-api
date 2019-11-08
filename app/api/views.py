@@ -126,6 +126,16 @@ class PetDetailView(BaseDetailView):
 
     async def patch(self):
         # TODO
+        instance = await self.get_object()
+        data = await self.request.json()
+
+        print(data)
+
+        async with self.request.app['db'].acquire() as conn:
+            await conn.execute(
+                pet.update().values(data).where(pet.c.id == instance.id)
+            )
+
         return web.json_response({})
 
     async def delete(self):
@@ -160,7 +170,8 @@ class SheltersView(web.View):
             )
 
     async def post(self):
-        data = await self.request.post()
+        data = await self.request.json()
+
         try:
             shelter_name = data['shelter-name']
             full_address = data['full-address']
@@ -169,16 +180,18 @@ class SheltersView(web.View):
         except KeyError:
             return web.json_response(
                 {
-                    'error': 'Send required post form data(shelter-name, full-address, city)'
+                    'error': 'Send required data(shelter-name, full-address, city)'
                 }
             )
 
         async with self.request.app['db'].acquire() as conn:
             await conn.execute(
                 shelter.insert().values(
-                    shelter_name=shelter_name,
-                    full_address=full_address,
-                    city=city
+                    {
+                        "shelter_name": shelter_name,
+                        "full_address": full_address,
+                        "city": city
+                    }
                 )
             )
 
