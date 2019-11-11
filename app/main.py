@@ -15,6 +15,7 @@ def main():
     app.on_startup.append(init_db)
     app.on_cleanup.append(close_db)
 
+    # Routing
     setup_routes(app)
 
     web.run_app(app)

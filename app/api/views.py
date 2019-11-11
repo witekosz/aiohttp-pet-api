@@ -1,13 +1,12 @@
+import logging
 
-from aiohttp.web_request import Request
-from psycopg2.errors import lookup as psg_error
 import sqlalchemy as sa
 from aiohttp import web
+from marshmallow import ValidationError
 
 from api.models import shelter, pet
 from api.serializers import PetSerializer, ShelterSerializer
 from api.utils import validate_uuid4
-from db import check_and_create_table
 from settings import PET_TYPES
 
 
@@ -118,22 +117,28 @@ class PetDetailView(BaseDetailView):
         )
 
     async def patch(self):
-        # TODO
         instance = await self.get_object()
         data = await self.request.json()
 
-        print(data)
+        try:
+            result = self.serializer.load(data)
+        except ValidationError as e:
+            response = e.messages
+            response['error'] = "Validation error"
+            return web.json_response(
+                response
+            )
 
         async with self.request.app['db'].acquire() as conn:
             await conn.execute(
-                pet.update().values(data).where(pet.c.id == instance.id)
+                pet.update().values(result).where(pet.c.id == instance.id)
             )
-            instance = 'test'
+        instance_updated = await self.get_object()
 
         return web.json_response(
             {
                 'message': 'updated',
-                'pet': self.serializer.dump(instance)
+                'pet': self.serializer.dump(instance_updated)
             }
         )
 
