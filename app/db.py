@@ -1,9 +1,7 @@
 import asyncio
 import logging
-import os
 
 from aiopg.sa import create_engine
-import sqlalchemy as sa
 from sqlalchemy.sql.ddl import CreateTable
 
 import settings
