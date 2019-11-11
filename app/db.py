@@ -31,16 +31,6 @@ async def check_and_create_table(conn, table, table_name):
         await conn.execute(CreateTable(table))
 
 
-def create_tables(engine):
-    meta = sa.MetaData()
-    meta.create_all(bind=engine, tables=[shelter, pet])
-
-
-def drop_tables(engine):
-    meta = sa.MetaData()
-    meta.drop_all(bind=engine, tables=[shelter, pet])
-
-
 async def init_db(app):
     logging.info("DB Init")
     app['db'] = await get_engine()
@@ -60,6 +50,5 @@ async def close_db(app):
 
 
 if __name__ == '__main__':
-    # create_tables(db_engine)
     loop = asyncio.get_event_loop()
     loop.run_until_complete(init_db_data())

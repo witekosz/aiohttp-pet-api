@@ -26,9 +26,8 @@ async def test_post_pets_view_no_data(aiohttp_client, test_app, loop):
     resp = await client.post('/pets')
     text = await resp.text()
 
-    assert resp.status == 200
-    assert "error" in text
-    assert "Send required post form data(shelter-name, full-address, city)" in text
+    assert resp.status == 400
+    assert "No data provided" in text
 
 
 async def test_get_pets_detail_view_dummy_id(aiohttp_client, test_app, loop):
