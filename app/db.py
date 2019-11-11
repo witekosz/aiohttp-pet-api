@@ -9,7 +9,6 @@ from sqlalchemy.sql.ddl import CreateTable
 import settings
 from api.models import shelter, pet
 
-SQL_DIR = os.path.join(settings.BASE_DIR, 'app', 'sql')
 
 def get_engine():
     engine = create_engine(
@@ -47,13 +46,12 @@ async def init_db(app):
     app['db'] = await get_engine()
 
 
-async def sample_data():
-    sql_shelters = (settings.BASE_DIR / 'app/sql/shelters_data.sql').read_text()
-    sql_pets = (settings.BASE_DIR / 'app/sql/pets_data.sql').read_text()
+async def init_db_data():
     async with get_engine() as engine:
         async with engine.acquire() as conn:
-            await conn.execute(sql_shelters)
-            await conn.execute(sql_pets)
+            await conn.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
+            await check_and_create_table(conn, shelter, "shelter")
+            await check_and_create_table(conn, pet, "pet")
 
 
 async def close_db(app):
@@ -64,4 +62,4 @@ async def close_db(app):
 if __name__ == '__main__':
     # create_tables(db_engine)
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(sample_data())
+    loop.run_until_complete(init_db_data())

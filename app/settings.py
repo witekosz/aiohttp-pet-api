@@ -2,6 +2,8 @@ import pathlib
 
 
 BASE_DIR = pathlib.Path(__file__).parent.parent
+SQL_DIR = BASE_DIR / 'app' / 'sql'
+
 
 # DB settings
 POSTGRES_USER = 'api_user'
