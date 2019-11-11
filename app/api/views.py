@@ -162,22 +162,18 @@ class SheltersView(BaseListView):
         city = self.request.rel_url.query.get('city', '')
 
         async with self.request.app['db'].acquire() as conn:
-            query = shelter.select()
-            # query2 = sa.select([func.count(pet.c.id).label('pets_available'), pet.c.shelter_id])\
-            #     .where(pet.c.available == True)\
-            #     .group_by('shelter_id')
-            # join = shelter.join(query2, query.c.id == query2.c.shelter_id)
-            # query = shelter.select().select_from(join)
+            query_pets = sa.select([func.count(pet.c.id).label('pets_available'), pet.c.shelter_id]) \
+                .where(pet.c.available == True) \
+                .group_by('shelter_id') \
+                .alias('query_pets')
+            join = sa.join(query_pets, shelter, shelter.c.id == query_pets.c.shelter_id, full=True)
+            query = sa.select('*').select_from(join)
             if city:
-                query = shelter.select() \
+                query = sa.select("*").select_from(join) \
                     .where(shelter.c.city == city)
 
             cursor = await conn.execute(query)
             shelters = await cursor.fetchall()
-            # print(shelters)
-            # cursor = await conn.execute(query2)
-            # q2 = await cursor.fetchall()
-            # print(q2)
 
             return web.json_response(
                 self.serializer.dump(shelters, many=True)
