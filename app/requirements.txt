@@ -1,0 +1,11 @@
+aiohttp
+aiohttp-devtools
+cchardet
+aiodns
+aiopg
+SQLAlchemy
+pytest
+pytest-aiohttp
+pytest-sugar
+pytest-xdist
+marshmallow

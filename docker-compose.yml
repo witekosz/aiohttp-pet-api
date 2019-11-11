@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+
+  a_app:
+    build: ./app
+    restart: always
+    image: web_app
+    container_name: async_app
+    command: python main.py
+    environment:
+      APP_ENV: DEVELOPMENT
+      APP_DEBUG: 'True'
+      APP_PORT: 5000
+      POSTGRES_USER: api_user
+      POSTGRES_PASSWORD: psg_pass
+      POSTGRES_DB: shelter_api
+      POSTGRES_PORT: postgres
+    depends_on:
+      - postgres
+    volumes:
+      - ./app/:/usr/src/app/
+    ports:
+      - 8080:8080
+    networks:
+      - web
+
+  postgres:
+    image: postgres:11
+    restart: always
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: api_user
+      POSTGRES_PASSWORD: psg_pass
+      POSTGRES_DB: shelter_api
+      PYTHONASYNCIODEBUG: 1
+    ports:
+      - 5432:5432
+    networks:
+      - web
+
+networks:
+  web:
+    driver: bridge
