@@ -1,5 +1,4 @@
 aiohttp
-aiohttp-devtools
 cchardet
 aiodns
 aiopg
