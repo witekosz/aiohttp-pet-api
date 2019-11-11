@@ -16,6 +16,16 @@ async def test_app(loop):
     return app
 
 
+@pytest.fixture
+async def get_pet_id(aiohttp_client, test_app, loop):
+    client = await aiohttp_client(test_app)
+
+    resp = await client.get('/pets')
+    data = await resp.json()
+
+    return data[0]['id']
+
+
 # @pytest.fixture(scope='module')
 # def db():
 #     test_config = get_config(['-c', TEST_CONFIG_PATH.as_posix()])
