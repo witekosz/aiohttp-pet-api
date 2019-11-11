@@ -1,6 +1,3 @@
-from api.utils import validate_uuid4
-
-
 async def test_index_view(aiohttp_client, test_app, loop):
     client = await aiohttp_client(test_app)
 

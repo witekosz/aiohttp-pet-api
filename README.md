@@ -1,6 +1,6 @@
 # Pet REST API
 
-### About 
+### About
 
 ##### Tools
 - web framework - **aiohttp**
@@ -40,6 +40,14 @@ Run app by docker compose locally(on Linux):
     ```
 6. Create a database:
     ```sh
-    $ docker-compose exec web python ...
+    $ docker-compose exec a_app python db.py
     ```
-6. The server should be running on: [localhost:8080](http://localhost:8080/)
+7. Load sample data:
+    ```sh
+    $ docker-compose exec a_app python db_data.py
+    ```
+7. Run tests:
+    ```sh
+    $ docker-compose exec a_app pytest
+    ```
+8. The server should be running on: [localhost:8080](http://localhost:8080/)

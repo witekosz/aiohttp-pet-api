@@ -24,20 +24,3 @@ async def get_pet_id(aiohttp_client, test_app, loop):
     data = await resp.json()
 
     return data[0]['id']
-
-
-# @pytest.fixture(scope='module')
-# def db():
-#     test_config = get_config(['-c', TEST_CONFIG_PATH.as_posix()])
-#
-#     setup_db(test_config['postgres'])
-#     yield
-#     teardown_db(test_config['postgres'])
-#
-#
-# @pytest.fixture
-# def tables_and_data():
-#     create_tables()
-#     sample_data()
-#     yield
-#     drop_tables()
