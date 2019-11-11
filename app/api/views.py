@@ -17,13 +17,6 @@ async def index(request):
     return web.Response(text=text)
 
 
-async def db_view(request):
-    async with request.app['db'].acquire() as conn:
-        await conn.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
-        await check_and_create_table(conn, shelter, "shelter")
-        await check_and_create_table(conn, pet, "pet")
-
-
 class BaseDetailView(web.View):
     table = None
     serializer = None
@@ -135,8 +128,14 @@ class PetDetailView(BaseDetailView):
             await conn.execute(
                 pet.update().values(data).where(pet.c.id == instance.id)
             )
+            instance = 'test'
 
-        return web.json_response({})
+        return web.json_response(
+            {
+                'message': 'updated',
+                'pet': self.serializer.dump(instance)
+            }
+        )
 
     async def delete(self):
         instance = await self.get_object()
