@@ -1,9 +1,9 @@
 INSERT INTO
     public.shelter (shelter_name,full_address,city)
 VALUES
-    ('Na skraju','Warszawa, ul. Warszawska 43','Warszawa'),
-    ('Ostatni przystanek','Radom, ul. Warszawska 43','Radom'),
-    ('Czworaki','Poznań, ul. Warszawska 43','Poznań'),
-    ('Schronisko Gminne','Wrocław, ul. Warszawska 43','Wrocław'),
-    ('Domek','Gdańsk, ul. Warszawska 43','Gdańsk'),
-    ('Szkółka','Nowe Miasto, ul. Warszawska 43','Nowe Miasto');
+    ('Schronisko Na skraju','Warszawa, ul. Radomska 43','Warszawa'),
+    ('Schronisko Ostatni przystanek','Radom, ul. Słoneczna 20','Radom'),
+    ('Schronisko Czworka','Poznań, ul. Lubelska 3','Poznań'),
+    ('Schronisko Gminne we Wrocławiu','Wrocław, ul. Psie Pole 4','Wrocław'),
+    ('Schronisko Domek','Gdańsk, ul. Leśna 21','Gdańsk'),
+    ('Schronisko Szkółka','Nowe Miasto, ul. Warszawska 20/5','Nowe Miasto');
