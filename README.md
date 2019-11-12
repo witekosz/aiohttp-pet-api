@@ -7,6 +7,10 @@
 - database - **PostgreSQL 11**
 - db connection - **aiopg**, **SQLAlchemy**(core)
 - data serialization - **Marshmallow**
+- testing - **pytest**
+
+##### Requirenments:
+- **docker**, **docker-compose**
 
 ### Content
 
